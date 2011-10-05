@@ -6,10 +6,46 @@
 #include<sstream>
 #include<fstream>
 #include <vector>
+#include <string.h>
 #include<map>
 #include<stdlib.h>
 #include<string>
 using namespace std;
+
+void computeReverse(const char*in,char*out,bool*valid){
+
+	*valid=true;
+
+	int length=strlen(in);
+
+	for(int j=0;j<length;j++){
+		char symbol=in[j];
+		char opposite='A';
+		switch(symbol){
+			case 'A':
+				opposite='T';
+				break;
+			case 'T':
+				opposite='A';
+				break;
+			case 'C':
+				opposite='G';
+				break;
+			case 'G':
+				opposite='C';
+				break;
+			default:
+				valid=false;
+				break;
+		}
+		if(!valid){
+			break;
+		}
+		out[length-1-j]=opposite;
+	}
+	out[length]='\0';
+
+}
 
 int main(int argc,char**argv){
 	if(argc!=4){
@@ -75,39 +111,18 @@ int main(int argc,char**argv){
 				cout<<"Analyzing redundancy "<<i+1<<"/"<<genomeSequence.length()<<endl;
 			}
 			string word=genomeSequence.substr(i,k);
+			bool valid=false;
 			char reverseWord[10000];
-			int length=word.length();
-			bool valid=true;
-			for(int j=0;j<length;j++){
-				char symbol=word[j];
-				char opposite='A';
-				switch(symbol){
-					case 'A':
-						opposite='T';
-						break;
-					case 'T':
-						opposite='A';
-						break;
-					case 'C':
-						opposite='G';
-						break;
-					case 'G':
-						opposite='C';
-						break;
-					default:
-						valid=false;
-						break;
-				}
-				if(!valid){
-					break;
-				}
-				reverseWord[length-1-j]=opposite;
-			}
+			computeReverse(word.c_str(),reverseWord,&valid);
+
 			if(valid){
-				reverseWord[length]='\0';
+
 				string theReverse=reverseWord;
-				redundancies[word]++;
-				redundancies[reverseWord]++;
+				string lower=word;
+				if(theReverse < lower)
+					lower = theReverse;
+
+				redundancies[lower]++;
 			}
 		}
 	}
@@ -123,11 +138,22 @@ int main(int argc,char**argv){
 			}
 	
 			string word=genomeSequence.substr(i,k);
+
+			bool valid;
+			char reverseWord[10000];
+			computeReverse(word.c_str(),reverseWord,&valid);
+
+			string theReverse=reverseWord;
+			string lower=word;
+			if(theReverse < lower)
+				lower = theReverse;
+
 			int redundancy=0;
-			if(redundancies.count(word)>0){
-				redundancy=redundancies[word];
+			if(redundancies.count(lower)>0){
+				redundancy=redundancies[lower];
 			}
-			fOut<<handle<<"\t"<<i+1<<"\t"<<word<<"\t"<<redundancy<<endl;
+
+			fOut<<handle<<"\t"<<i+1<<"\t"<<word<<"\t"<<theReverse<<"\t"<<redundancy<<endl;
 		}
 	
 		cout<<"Writing "<<output<<" "<<genomeSequence.length()<<"/"<<genomeSequence.length()<<endl;
